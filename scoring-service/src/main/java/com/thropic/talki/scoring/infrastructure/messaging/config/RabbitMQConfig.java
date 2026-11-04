@@ -15,12 +15,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE      = "talki.events";
-    public static final String DLX           = "talki.dlx";
-    public static final String QUEUE_DLQ     = "scoring.fillers-ready.dlq";
-    public static final String QUEUE         = "scoring.fillers-ready";
-    public static final String ROUTING_KEY   = "fillers.analyzed";
-    public static final String OUT_ROUTING   = "scoring.completed";
+    public static final String EXCHANGE         = "talki.events";
+    public static final String DLX              = "talki.dlx";
+    public static final String QUEUE_DLQ        = "scoring.fillers-ready.dlq";
+    public static final String QUEUE            = "scoring.fillers-ready";
+    public static final String ROUTING_KEY      = "fillers.analyzed";
+    public static final String OUT_ROUTING      = "scoring.completed";
+    public static final String QUEUE_SESSIONS   = "scoring.session-finalized";
+    public static final String ROUTING_SESSIONS = "session.live.finalized";
 
     @Bean
     public TopicExchange talkiEventsExchange() {
@@ -42,6 +44,20 @@ public class RabbitMQConfig {
     @Bean
     public Binding scoringBinding(Queue scoringQueue, TopicExchange talkiEventsExchange) {
         return BindingBuilder.bind(scoringQueue).to(talkiEventsExchange).with(ROUTING_KEY);
+    }
+
+    /** Sus fallos van a la misma cola de fallos, no a la de filler-detection-service. */
+    @Bean
+    public Queue sessionFinalizedQueue() {
+        return QueueBuilder.durable(QUEUE_SESSIONS)
+                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument("x-dead-letter-routing-key", ROUTING_KEY)
+                .build();
+    }
+
+    @Bean
+    public Binding sessionFinalizedBinding(Queue sessionFinalizedQueue, TopicExchange talkiEventsExchange) {
+        return BindingBuilder.bind(sessionFinalizedQueue).to(talkiEventsExchange).with(ROUTING_SESSIONS);
     }
 
     @Bean
