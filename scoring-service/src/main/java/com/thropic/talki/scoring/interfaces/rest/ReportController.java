@@ -87,7 +87,7 @@ public class ReportController {
     }
 
     @Operation(summary = "Consultar el reporte de una práctica",
-            description = "Solo los estados COMPLETED incluyen puntuación. El userId lo declara quien llama: "
+            description = "Solo el estado COMPLETED incluye puntuación. El userId lo declara quien llama: "
                     + "el servicio aún no valida el JWT, así que esta comparación no es una autorización real.")
     @ApiResponse(responseCode = "200", description = "Evaluación disponible, o práctica sin evidencia suficiente (sin puntuación)",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
