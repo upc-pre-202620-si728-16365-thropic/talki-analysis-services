@@ -33,6 +33,7 @@ public class ScoreCalculator {
                 event.getTotalFillers(),
                 silenceRatio,
                 wpm,
+                event.getDurationSeconds(),
                 event.getTraceId()
         );
     }
