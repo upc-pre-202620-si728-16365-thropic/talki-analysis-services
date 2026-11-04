@@ -18,8 +18,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 /** TS03: un fallo transitorio se reintenta y uno persistente queda en la cola de fallos. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -72,5 +74,6 @@ class ScoringDeadLetterIT extends AbstractRabbitIT {
 
         await().atMost(Duration.ofSeconds(15)).untilAsserted(() ->
                 assertThat(scoreResultRepository.findBySessionId(sessionId)).isPresent());
+        verify(scoreCalculator, atLeast(2)).calculate(argThat(e -> e != null && sessionId.equals(e.getSessionId())));
     }
 }
