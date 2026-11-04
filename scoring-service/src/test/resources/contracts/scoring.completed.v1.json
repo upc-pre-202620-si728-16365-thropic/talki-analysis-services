@@ -1,0 +1,21 @@
+{
+  "eventId": "33333333-3333-3333-3333-333333333333",
+  "eventType": "scoring.completed",
+  "occurredAt": 1793750402.000000000,
+  "traceId": "trace-contract-1",
+  "version": "1.0",
+  "sessionId": "session-contract-1",
+  "userId": "user-contract-1",
+  "scores": {
+    "fluency": 94,
+    "clarity": 85,
+    "volume": 90,
+    "vocabulary": 91,
+    "confidence": 75
+  },
+  "overallScore": 87,
+  "fillersCount": 3,
+  "silenceRatio": 0.08,
+  "wordsPerMinute": 130,
+  "durationSeconds": 300
+}
