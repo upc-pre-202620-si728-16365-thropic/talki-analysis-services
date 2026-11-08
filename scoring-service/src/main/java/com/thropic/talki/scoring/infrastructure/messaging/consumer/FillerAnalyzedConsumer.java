@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class FillerAnalyzedConsumer {
@@ -32,8 +31,9 @@ public class FillerAnalyzedConsumer {
         this.scoreResultRepository = scoreResultRepository;
     }
 
+    // Sin @Transactional: save() confirma por sí mismo y el evento se publica después del
+    // commit. Dentro de una transacción, capturar la violación de unicidad no evitaría el rollback.
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
-    @Transactional
     public void handle(FillerAnalyzedEvent event) {
         log.info("[scoring-service] Received fillers.analyzed — sessionId={} totalFillers={}",
                 event.getSessionId(), event.getTotalFillers());
