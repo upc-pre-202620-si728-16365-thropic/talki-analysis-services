@@ -1,5 +1,7 @@
 package com.thropic.talki.scoring.infrastructure.messaging.config;
 
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
@@ -15,6 +17,7 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE      = "talki.events";
     public static final String DLX           = "talki.dlx";
+    public static final String QUEUE_DLQ     = "scoring.fillers-ready.dlq";
     public static final String QUEUE         = "scoring.fillers-ready";
     public static final String ROUTING_KEY   = "fillers.analyzed";
     public static final String OUT_ROUTING   = "scoring.completed";
@@ -42,6 +45,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue deadLetterQueue() {
+        return QueueBuilder.durable(QUEUE_DLQ).build();
+    }
+
+    /** Un fallo persistente queda aquí, visible, en lugar de perderse en el DLX. */
+    @Bean
+    public Binding deadLetterBinding(DirectExchange deadLetterExchange) {
+        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange).with(ROUTING_KEY);
+    }
+
+    @Bean
     public Jackson2JsonMessageConverter messageConverter() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -61,6 +75,13 @@ public class RabbitMQConfig {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(messageConverter());
+        // Fallo transitorio: 3 intentos. Fallo persistente: a la cola de fallos, sin reencolar.
+        factory.setDefaultRequeueRejected(false);
+        factory.setAdviceChain(RetryInterceptorBuilder.stateless()
+                .maxAttempts(3)
+                .backOffOptions(200, 2.0, 1000)
+                .recoverer(new RejectAndDontRequeueRecoverer())
+                .build());
         return factory;
     }
 }

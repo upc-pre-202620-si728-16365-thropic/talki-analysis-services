@@ -10,6 +10,7 @@ import com.thropic.talki.scoring.infrastructure.messaging.producer.ScoringComple
 import com.thropic.talki.scoring.infrastructure.persistence.ScoreResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,11 @@ public class FillerAnalyzedConsumer {
     // commit. Dentro de una transacción, capturar la violación de unicidad no evitaría el rollback.
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
     public void handle(FillerAnalyzedEvent event) {
+        if (isBlank(event.getSessionId()) || isBlank(event.getUserId())) {
+            // Sin correlación no hay reintento útil: directo a la cola de fallos.
+            throw new AmqpRejectAndDontRequeueException(
+                    "fillers.analyzed sin sessionId/userId, eventId=" + event.getEventId());
+        }
         log.info("[scoring-service] Received fillers.analyzed — sessionId={} totalFillers={}",
                 event.getSessionId(), event.getTotalFillers());
 
@@ -72,5 +78,9 @@ public class FillerAnalyzedConsumer {
                 event.getSessionId(), scoring.getOverallScore());
 
         publisher.publish(scoring);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }
