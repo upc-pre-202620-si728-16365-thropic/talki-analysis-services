@@ -11,6 +11,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -20,7 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Base de las pruebas *IT: un único RabbitMQ real para toda la ejecución. */
+/**
+ * Base de las pruebas *IT: un único RabbitMQ real para toda la ejecución.
+ * Cada clase cierra su contexto para que sus listeners no compitan por los mensajes
+ * de la siguiente clase.
+ */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractRabbitIT {
 
     protected static final String EXCHANGE = "talki.events";
