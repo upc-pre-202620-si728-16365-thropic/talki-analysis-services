@@ -18,12 +18,13 @@ public class ScoringCompletedEvent {
     private int fillersCount;
     private double silenceRatio;
     private int wordsPerMinute;
+    private int durationSeconds;
 
     public ScoringCompletedEvent() {}
 
     public ScoringCompletedEvent(String sessionId, String userId, VoiceScore scores,
                                   int fillersCount, double silenceRatio,
-                                  int wordsPerMinute, String traceId) {
+                                  int wordsPerMinute, int durationSeconds, String traceId) {
         this.eventId = UUID.randomUUID().toString();
         this.occurredAt = Instant.now();
         this.traceId = traceId;
@@ -34,6 +35,7 @@ public class ScoringCompletedEvent {
         this.fillersCount = fillersCount;
         this.silenceRatio = silenceRatio;
         this.wordsPerMinute = wordsPerMinute;
+        this.durationSeconds = durationSeconds;
     }
 
     public String getEventId() { return eventId; }
@@ -60,4 +62,6 @@ public class ScoringCompletedEvent {
     public void setSilenceRatio(double silenceRatio) { this.silenceRatio = silenceRatio; }
     public int getWordsPerMinute() { return wordsPerMinute; }
     public void setWordsPerMinute(int wordsPerMinute) { this.wordsPerMinute = wordsPerMinute; }
+    public int getDurationSeconds() { return durationSeconds; }
+    public void setDurationSeconds(int durationSeconds) { this.durationSeconds = durationSeconds; }
 }

@@ -36,6 +36,14 @@ class FillersAnalyzedPipelineIT extends AbstractRabbitIT {
         assertThat(published.get("traceId").asText()).isEqualTo("trace-contract-1");
         assertThat(published.get("overallScore").asInt()).isBetween(0, 100);
         assertThat(published.get("fillersCount").asInt()).isEqualTo(3);
+        assertThat(published.get("durationSeconds"))
+                .as("progress-service necesita la duración para acumular minutos")
+                .isNotNull();
+        assertThat(published.get("durationSeconds").asInt()).isEqualTo(300);
+        assertThat(fieldNames(published))
+                .as("los campos publicados deben coincidir con el contrato scoring.completed v1")
+                .containsExactlyInAnyOrderElementsOf(
+                        fieldNames(fixture("contracts/scoring.completed.v1.json")));
 
         ScoreResult persisted = scoreResultRepository.findBySessionId(sessionId).orElseThrow();
         assertThat(persisted.getUserId()).isEqualTo("user-contract-1");

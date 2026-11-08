@@ -53,7 +53,7 @@ class FillerAnalyzedConsumerTest {
         inputEvent.setTraceId("trace-1");
         VoiceScore scores = new VoiceScore(80, 75, 70, 85, 90);
         calculatedEvent = new ScoringCompletedEvent(
-                "sess-1", "user-1", scores, 5, 0.08, 150, "trace-1"
+                "sess-1", "user-1", scores, 5, 0.08, 150, 120, "trace-1"
         );
     }
 
